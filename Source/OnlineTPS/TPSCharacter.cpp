@@ -38,30 +38,26 @@ void ATPSCharacter::BeginPlay()
 void ATPSCharacter::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
-
-	const FVector Forward = GetActorForwardVector();
-	AddMovementInput(Forward, MovementVector.Y);
-
-	const FVector Right = GetActorRightVector();
-	AddMovementInput(Right, MovementVector.X);
-
-	/*More complex movement method
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 	
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	AddMovementInput(ForwardDirection, MovementVector.Y);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	AddMovementInput(RightDirection, MovementVector.X);
-	*/
+	if (Controller && (MovementVector.X != 0 || MovementVector.Y != 0))
+	{
+		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
 }
 
 void ATPSCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D LookAxisVector =  Value.Get<FVector2D>();
-
-	AddControllerPitchInput(LookAxisVector.Y);
-	AddControllerYawInput(LookAxisVector.X);
+	
+	if (Controller && (LookAxisVector.X != 0 || LookAxisVector.Y != 0))
+	{
+		AddControllerPitchInput(LookAxisVector.Y);
+		AddControllerYawInput(LookAxisVector.X);
+	}
 }
 
 void ATPSCharacter::Jump(const FInputActionValue& Value)
