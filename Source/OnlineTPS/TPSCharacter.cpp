@@ -5,6 +5,7 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ATPSCharacter::ATPSCharacter()
 {
@@ -19,7 +20,9 @@ ATPSCharacter::ATPSCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	
+	//To prevent character rotation with camera
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void ATPSCharacter::BeginPlay()
@@ -60,15 +63,6 @@ void ATPSCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ATPSCharacter::Jump(const FInputActionValue& Value)
-{
-	const bool CurrentValue = Value.Get<bool>();
-	if (CurrentValue)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Purple, TEXT("IA_Jump triggered"));
-	}
-}
-
 void ATPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -82,7 +76,7 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Move);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Look);
 	}
 }
