@@ -5,6 +5,7 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 ATPSCharacter::ATPSCharacter()
@@ -23,6 +24,9 @@ ATPSCharacter::ATPSCharacter()
 	//To prevent character rotation with camera
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	OverheadWidget->SetupAttachment(RootComponent);
 }
 
 void ATPSCharacter::BeginPlay()
