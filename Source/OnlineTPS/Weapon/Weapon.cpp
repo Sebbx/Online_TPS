@@ -1,6 +1,9 @@
 #include "Weapon.h"
 
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
+#include "OnlineTPS/TPSCharacter.h"
+
 
 AWeapon::AWeapon()
 {
@@ -19,18 +22,39 @@ AWeapon::AWeapon()
 	AreaSphere->SetupAttachment(RootComponent);
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+	PickupWidget->SetupAttachment(RootComponent);
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority()) // same as: GetLocalRole() == ROLE_Authority
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(false);
+	}
+
+	if (HasAuthority()) // same as: GetLocalRole() == ROLE_Authority (that means, only on server)
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 	}
 }
+
+void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	ATPSCharacter* TPSCharacter = Cast<ATPSCharacter>(OtherActor);
+	if (TPSCharacter && PickupWidget)
+	{
+		PickupWidget->SetVisibility(true);
+	}
+	
+}
+
 
 void AWeapon::Tick(float DeltaTime)
 {

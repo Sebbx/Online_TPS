@@ -18,7 +18,7 @@ void UOverheadWidget::ShowPlayerNickname(APawn* InPawn)
 	if (!PlayerState) return;
 	
 	FString PlayerName = PlayerState->GetPlayerName();
-	SetDisplayText(PlayerName);
+	//SetDisplayText(PlayerName);
 }
 
 void UOverheadWidget::NativeDestruct()
