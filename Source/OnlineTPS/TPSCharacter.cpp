@@ -7,6 +7,8 @@
 #include "EnhancedInputComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Weapon/Weapon.h"
 
 ATPSCharacter::ATPSCharacter()
 {
@@ -29,6 +31,12 @@ ATPSCharacter::ATPSCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 }
 
+void ATPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(ATPSCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
 void ATPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -40,6 +48,43 @@ void ATPSCharacter::BeginPlay()
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
+}
+
+void ATPSCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+void ATPSCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
+}
+
+
+void ATPSCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	
 }
 
 void ATPSCharacter::Move(const FInputActionValue& Value)
@@ -67,12 +112,6 @@ void ATPSCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ATPSCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -84,4 +123,5 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ATPSCharacter::Look);
 	}
 }
+
 
